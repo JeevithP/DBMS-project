@@ -5,7 +5,7 @@ import { clubLogin, clubLogout, clubRegister } from "../controller/club.controll
 const router=express.Router();
 
 router.route("/register").post(clubRegister);
-router.route("/register").post(clubLogin);
-router.route("/register").post(clubLogout);
+router.route("/login").post(clubLogin);
+router.route("/logout").post(clubLogout);
 
 export default router;

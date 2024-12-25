@@ -5,7 +5,7 @@ import { studentLogin, studentLogout, studentRegister } from "../controller/stud
 const router=express.Router();
 
 router.route("/register").post(studentRegister);
-router.route("/register").post(studentLogin);
-router.route("/register").post(studentLogout);
+router.route("/login").post(studentLogin);
+router.route("/logout").post(studentLogout);
 
 export default router;
