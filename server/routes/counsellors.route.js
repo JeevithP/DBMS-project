@@ -7,6 +7,6 @@ const router=express.Router();
 
 router.route("/register").post(counsellorRegister);
 router.route("/login").post(counsellorLogin);
-router.route("/logout").post(counsellorLogout);
+router.route("/logout").get(counsellorLogout);
 
 export default router;

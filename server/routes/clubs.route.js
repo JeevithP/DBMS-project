@@ -6,6 +6,6 @@ const router=express.Router();
 
 router.route("/register").post(clubRegister);
 router.route("/login").post(clubLogin);
-router.route("/logout").post(clubLogout);
+router.route("/logout").get(clubLogout);
 
 export default router;

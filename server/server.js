@@ -13,7 +13,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/student",studentRoute);
 app.use("/api/v1/counsellor",counsellorRoute);
-app.use("/api/v1/counsellor",clubRoute);
+app.use("/api/v1/club",clubRoute);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -1,8 +1,12 @@
 import jwt from "jsonwebtoken";
 
 export const generateToken = (res, user, role, message) => {
+    let currId=1;
+    if(role=="student") currId=user.sid;
+    else currId=user.cid;
+    
   const token = jwt.sign(
-    { userId: user.id, role }, // Include the role in the token payload
+    { userId: currId, role }, // Include the role in the token payload
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
