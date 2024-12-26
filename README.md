@@ -1,5 +1,3 @@
-SQL query to create the required database :
-
 -- Create the 'department' table (parent for student and counsellor)
 CREATE TABLE department (
     did INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
