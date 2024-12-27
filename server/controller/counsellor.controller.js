@@ -4,7 +4,12 @@ import pool from '../db/connection.js';
 
 export const counsellorLogin=async(req,res)=>{
     const { username, password } = req.body;
-    
+    if(!username || !password){
+        return res.status(400).json({
+            success: false,
+            message: "All required fields must be provided",
+        });
+    }
   try {
     const [rows] = await pool.query(
       "SELECT * FROM counsellor WHERE username = ?",
@@ -17,7 +22,8 @@ export const counsellorLogin=async(req,res)=>{
 
     const user = rows[0];
 
-    if (user.password !== password) {
+    const isPassword=await bcrypt.compare(password,user.password);
+    if (!isPassword) {
       return res.status(401).json({ success: false, message: "Invalid password" });
     }
 
@@ -30,7 +36,13 @@ export const counsellorLogin=async(req,res)=>{
 
 export const counsellorRegister=async(req,res)=>{
     const {name,email, username, password } = req.body;
-  
+    
+    if(!name || !username || !password || !email){
+        return res.status(400).json({
+            success: false,
+            message: "All required fields must be provided",
+        });
+    }
     try {
       // Check if the username or email already exists
       const [existingUsers] = await pool.query(
@@ -79,4 +91,25 @@ export const counsellorLogout=async(req,res)=>{
             message:"Failed to logout"
         })
     }
+}
+
+export const getCounsellorProfile=async(req,res)=>{
+    try {
+        const userId = req.user.userId; // Extracted from the authenticated user's token
+        // console.log(req.user);
+        // Fetch student details from the database
+        const [rows] = await pool.query(
+          "SELECT name, email, username FROM counsellor WHERE cid = ?",
+          [userId]
+        );
+    
+        if (rows.length === 0) {
+          return res.status(404).json({ success: false, message: "counsellor not found" });
+        }
+    
+        const counsellor = rows[0];
+        return res.status(200).json({ success: true, counsellor });
+      } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+      }
 }

@@ -4,7 +4,13 @@ import pool from '../db/connection.js';
 
 export const studentLogin=async(req,res)=>{
     const { username, password } = req.body;
-    
+
+    if(!username || !password){
+        return res.status(400).json({
+            success: false,
+            message: "All required fields must be provided",
+        });
+    }
   try {
     const [rows] = await pool.query(
       "SELECT * FROM student WHERE username = ?",
@@ -16,8 +22,11 @@ export const studentLogin=async(req,res)=>{
     }
 
     const user = rows[0];
-
-    if (user.password !== password) {
+    const isPassword=await bcrypt.compare(password,user.password);
+    // console.log(password);
+    // console.log(user.password);
+    // console.log(isPassword);
+    if (!isPassword) {
       return res.status(401).json({ success: false, message: "Invalid password" });
     }
 
