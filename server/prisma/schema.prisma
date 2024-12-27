@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model club {
+  cid      Int     @id @default(autoincrement())
+
+  name     String  @db.VarChar(255)
+  email    String  @unique @db.VarChar(255)
+  password String  @db.VarChar(255)
+
+  created_at    DateTime       @db.Timestamp(0) @default(now())
+
+  events   events[]
+}
+
+model counsellor {
+  cid           Int        @id @default(autoincrement())
+
+  name          String     @db.VarChar(255)
+  email         String     @unique @db.VarChar(255)
+  password      String     @db.VarChar(255)
+
+  created_at    DateTime       @default(now())
+  
+  students      students[]
+}
+
+model department {
+  did        Int         @id @default(autoincrement())
+  name       String      @db.VarChar(255)
+
+  created_at    DateTime       @default(now())
+
+  students   students[]
+}
+
+
+model event_student {
+  esid       Int       @id @default(autoincrement())
+
+  points     Int
+
+  student_id Int
+  event_id   Int
+
+  created_at    DateTime       @default(now())
+
+  students   students @relation(fields: [student_id], references: [sid], onDelete: Restrict, onUpdate: Restrict, map: "event_student_ibfk_1")
+  events     events   @relation(fields: [event_id], references: [eid], onDelete: Restrict, onUpdate: Restrict, map: "event_student_ibfk_2")
+
+  @@index([event_id], map: "event_id")
+  @@index([student_id], map: "student_id")
+}
+
+model events {
+  eid           Int             @id @default(autoincrement())
+
+  name          String          @db.VarChar(255)
+  points        Int
+
+  venue         String?         @db.VarChar(255)
+  start_time    DateTime?       @db.Timestamp(0)
+  end_time      DateTime?       @db.Timestamp(0)
+
+  created_at    DateTime       @default(now())
+
+
+  club_id       Int
+
+  event_student event_student[]
+  club          club?           @relation(fields: [club_id], references: [cid], onDelete: Restrict, onUpdate: Restrict, map: "events_ibfk_1")
+
+  @@index([club_id], map: "club_id")
+}
+
+model students {
+  sid           Int             @id @default(autoincrement())
+
+  usn           String         @unique @db.VarChar(255)
+  email         String         @unique @db.VarChar(255)
+  name          String         @db.VarChar(255)
+  password      String         @db.VarChar(255)
+
+  department_id Int
+  counsellor_id Int
+
+  created_at    DateTime       @default(now())
+  points        Int?
+
+  event_student event_student[]
+  department    department?     @relation(fields: [department_id], references: [did], onDelete: Restrict, onUpdate: Restrict, map: "students_ibfk_1")
+  counsellor    counsellor?     @relation(fields: [counsellor_id], references: [cid], onDelete: Restrict, onUpdate: Restrict, map: "students_ibfk_2")
+
+  @@index([counsellor_id], map: "counsellor_id")
+  @@index([department_id], map: "department_id")
+}
