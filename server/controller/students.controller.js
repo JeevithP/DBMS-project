@@ -38,7 +38,7 @@ export const studentLogin=async(req,res)=>{
 }
 
 export const studentRegister = async (req, res) => {
-    const { username, email, password,usn,name,department_id,counsellor_id } = req.body;
+    const { username, email, password,usn,name,department,counsellor } = req.body;
   
     try {
       // Check if the username or email already exists
@@ -53,7 +53,21 @@ export const studentRegister = async (req, res) => {
           message: "Username or Email already exists",
         });
       }
-  
+      // Get dept_id
+      const [getDeptId] = await pool.query(
+        "SELECT * FROM department WHERE name=?",
+        [department]
+      );
+      console.log(getDeptId[0]);
+      const department_id=getDeptId[0].did;
+
+      // Get cid
+      const [getCounsId] = await pool.query(
+        "SELECT * FROM counsellor WHERE name=?",
+        [counsellor]
+      );
+      console.log(getCounsId[0]);
+      const counsellor_id=getCounsId[0].cid;
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
   
