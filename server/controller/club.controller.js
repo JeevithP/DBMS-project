@@ -64,7 +64,7 @@ export const clubRegister = async (req, res) => {
         // Insert the new student into the database
         const [result] = await pool.query(
             "INSERT INTO club (name,username, password) VALUES (?, ?, ?)",
-            [name, username, password]
+            [name, username, hashedPassword]
         );
 
         // Respond with success

@@ -23,9 +23,7 @@ export const studentLogin=async(req,res)=>{
 
     const user = rows[0];
     const isPassword=await bcrypt.compare(password,user.password);
-    // console.log(password);
-    // console.log(user.password);
-    // console.log(isPassword);
+    
     if (!isPassword) {
       return res.status(401).json({ success: false, message: "Invalid password" });
     }
@@ -58,7 +56,7 @@ export const studentRegister = async (req, res) => {
         "SELECT * FROM department WHERE name=?",
         [department]
       );
-      console.log(getDeptId[0]);
+      
       const department_id=getDeptId[0].did;
 
       // Get cid
