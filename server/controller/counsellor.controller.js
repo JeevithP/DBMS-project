@@ -96,7 +96,6 @@ export const counsellorLogout=async(req,res)=>{
 export const getCounsellorProfile=async(req,res)=>{
     try {
         const userId = req.user.userId; // Extracted from the authenticated user's token
-        // console.log(req.user);
         // Fetch student details from the database
         const [rows] = await pool.query(
           "SELECT name, email, username FROM counsellor WHERE cid = ?",

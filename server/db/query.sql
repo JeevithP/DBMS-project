@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 -- Create the 'department' table (parent for student and counsellor)
 CREATE TABLE department (
     did INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -118,4 +118,4 @@ CREATE TABLE event_student (
     FOREIGN KEY (student_id) REFERENCES student(sid),
     FOREIGN KEY (event_id) REFERENCES events(eid)
 );
->>>>>>> 68607dd4148913ed66a3fa78a3bf80f4b7ef5efe
+
