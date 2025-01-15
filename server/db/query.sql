@@ -2,7 +2,7 @@
 -- Create the 'department' table (parent for student and counsellor)
 CREATE TABLE department (
     did INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255)
+    name VARCHAR(255) 
 );
 
 -- Create the 'counsellor' table (references 'department')
@@ -19,7 +19,7 @@ CREATE TABLE counsellor (
 -- Create the 'student' table (references 'department' and 'counsellor')
 CREATE TABLE student (
     sid INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    usn VARCHAR(255),
+    usn VARCHAR(255) UNIQUE,
     name VARCHAR(255),
     email VARCHAR(255),
     department_id INT UNSIGNED,
