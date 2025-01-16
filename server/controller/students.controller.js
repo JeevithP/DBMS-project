@@ -21,7 +21,7 @@ export const studentLogin=async(req,res)=>{
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-
+    
     const user = rows[0];
     const isPassword=await bcrypt.compare(password,user.password);
     
