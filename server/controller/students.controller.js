@@ -158,10 +158,10 @@ export const studentProfileUpdate = async (req, res) => {
 
     try {
         // Query to get events not registered by the student
-        const eventsNotRegisteredByStudent = await db.query(`
+        const eventsNotRegisteredByStudent = await pool.query(`
             SELECT * FROM events 
-            WHERE event_id NOT IN (
-                SELECT event_id FROM event_student
+            WHERE eid NOT IN (
+                SELECT eid FROM event_student
                 WHERE student_id = ?
             )
         `, [student_id]);
@@ -178,7 +178,7 @@ export const studentProfileUpdate = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Events Fetched Successfully",
-            data: eventsNotRegisteredByStudent
+            data: eventsNotRegisteredByStudent[0]
         });
     } catch (error) {
         console.error(error);
@@ -190,10 +190,10 @@ export const studentProfileUpdate = async (req, res) => {
 };
 export const registerForEvent = async (req, res) => {
     const student_id = req.user.userId; // Extract student ID from authenticated user
-    const { event_id } = req.body; // Get event_id from the request body
+    const { eid } = req.body; // Get eid from the request body
 
     // Validate input
-    if (!event_id) {
+    if (!eid) {
         return res.status(400).json({
             success: false,
             message: "Event ID is required",
@@ -202,7 +202,7 @@ export const registerForEvent = async (req, res) => {
 
     try {
         // Check if the event exists
-        const eventExists = await db.query("SELECT * FROM events WHERE event_id = ?", [event_id]);
+        const eventExists = await db.query("SELECT * FROM events WHERE eid = ?", [eid]);
         if (eventExists.length === 0) {
             return res.status(404).json({
                 success: false,
@@ -212,8 +212,8 @@ export const registerForEvent = async (req, res) => {
 
         // Check if the student is already registered for the event
         const alreadyRegistered = await db.query(
-            "SELECT * FROM event_student WHERE student_id = ? AND event_id = ?",
-            [student_id, event_id]
+            "SELECT * FROM event_student WHERE student_id = ? AND eid = ?",
+            [student_id, eid]
         );
         if (alreadyRegistered.length > 0) {
             return res.status(400).json({
@@ -224,8 +224,8 @@ export const registerForEvent = async (req, res) => {
 
         // Register the student for the event
         await db.query(
-            "INSERT INTO event_student (student_id, event_id, approved) VALUES (?, ?, ?)",
-            [student_id, event_id, false]
+            "INSERT INTO event_student (student_id, eid, approved) VALUES (?, ?, ?)",
+            [student_id, eid, false]
         );
 
         // Success response
@@ -241,3 +241,35 @@ export const registerForEvent = async (req, res) => {
         });
     }
 };
+
+export const getEventsByStudentID = async (req,res) => {
+
+  const { studentID } = req.body;
+  // const clubId = req.user.userId;
+
+  if(!studentID){
+      return res.status(400).json({
+          success: false,
+          message: "Please provide student id",
+      });
+  }
+
+  try {
+      const [rows] = await pool.query("SELECT * FROM event_student WHERE student_id=?",
+        [studentID,]
+      )
+
+      console.log("EVENTS = ");
+      console.log(rows);
+
+      return res.status(201).json({
+          success: true,
+          events: rows,
+      });
+
+  }
+  catch(error){
+      console.error("Failed To delete Event ,", error);
+      res.status(500).json({ success: false, message: "Server error" })
+  }
+}

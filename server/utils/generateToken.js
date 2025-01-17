@@ -7,7 +7,7 @@ export const generateToken = (res, user, role, message) => {
     
   const token = jwt.sign(
     { userId: currId, role }, // Include the role in the token payload
-    process.env.JWT_SECRET,
+    "secret",
     { expiresIn: "1d" }
   );
   

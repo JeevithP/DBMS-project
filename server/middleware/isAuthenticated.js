@@ -12,7 +12,7 @@ const isAuthenticated = (roles = []) => {
           });
         }
   
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, "secret");
   
         if (!decoded) {
           return res.status(401).json({
