@@ -1,117 +1,127 @@
-import axios from "axios";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setUser } from "../redux/userSlice";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Box, Button, Container, Typography, Grid, Stack } from '@mui/material';
+import { motion } from 'framer-motion';
 
-const Home = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state?.user);
-
-  const fetchUserDetails = async () => {
-    try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/profile`;
-      const response = await axios.get(URL, {
-        withCredentials: true,
-      });
-
-      console.log(response);
-      dispatch(setUser(response.data.student));
-    } catch (error) {
-      const token = localStorage.getItem("token");
-      console.log("Token from localStorage:", token);
-      console.log("Error:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserDetails();
-  }, []);
-
-  if (!user) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          fontFamily: "Arial, sans-serif",
-          color: "#555",
-          backgroundColor: "#f5f6fa",
-          fontSize: "20px", // Increased font size for loading screen
-        }}
-      >
-        <p>Loading profile...</p>
-      </div>
-    );
-  }
-
+const HomePage = () => {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "'Helvetica Neue', Arial, sans-serif", // Professional font style
-        backgroundColor: "#f5f6fa",
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "#fff",
-          borderRadius: "12px",
-          padding: "40px",
-          width: "80%",
-          height: "80vh",
-          boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
-          border: "1px solid #e0e0e0",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
-      >
-        <h1
-          style={{
-            color: "#2c3e50",
-            marginBottom: "30px",
-            fontSize: "36px", // Professional heading size
-            fontWeight: "bold",
-            textAlign: "center",
+    <div className="bg-gray-100 min-h-screen">
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            minHeight: '80vh',
           }}
         >
-          Student Profile
-        </h1>
-        <div
-          style={{
-            fontSize: "18px", // Increased font size for body text
-            color: "#333",
-            lineHeight: "1.8", // Increased line height for better readability
-            margin: "0 auto",
-            maxWidth: "500px",
-          }}
-        >
-          <p>
-            <strong>Name:</strong> {user.name}
-          </p>
-          <p>
-            <strong>Email:</strong> {user.email}
-          </p>
-          <p>
-            <strong>USN:</strong> {user.usn}
-          </p>
-          <p>
-            <strong>Department:</strong> {user.department_id}
-          </p>
-          <p>
-            <strong>Counsellor:</strong> {user.counsellor_id || "Not Assigned"}
-          </p>
-        </div>
-      </div>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'flex-start',
+                  height: '100%',
+                }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: -50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  <Typography variant="h2" component="h1" gutterBottom>
+                    Activity Points Management System
+                  </Typography>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                  <Typography variant="body1" color="textSecondary" mb={4}>
+                    A platform to track and manage student activities and their corresponding points.
+                  </Typography>
+                </motion.div>
+                <Stack spacing={2}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                  >
+                    <Link to="/api/v1/student/login">
+                      <Button
+                        variant="contained"
+                        sx={{
+                          backgroundColor: '#1976d2', // Professional blue
+                          '&:hover': {
+                            backgroundColor: '#1565c0', // Darker shade on hover
+                          },
+                        }}
+                        fullWidth
+                      >
+                        Student Login
+                      </Button>
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                  >
+                    <Link to="/api/v1/club/login">
+                      <Button
+                        variant="contained"
+                        sx={{
+                          backgroundColor: '#616161', // Deep gray for professionalism
+                          '&:hover': {
+                            backgroundColor: '#424242', // Slightly darker gray
+                          },
+                        }}
+                        fullWidth
+                      >
+                        Club Login
+                      </Button>
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 1 }}
+                  >
+                    <Link to="/api/v1/counsellor/login">
+                      <Button
+                        variant="contained"
+                        sx={{
+                          backgroundColor: '#388e3c', // Neutral green
+                          '&:hover': {
+                            backgroundColor: '#2c6e31', // Darker green on hover
+                          },
+                        }}
+                        fullWidth
+                      >
+                        Counsellor Login
+                      </Button>
+                    </Link>
+                  </motion.div>
+                </Stack>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+              >
+                <img src="image.png" alt="Hero Image" style={{ maxWidth: '80%' }} />
+              </motion.div>
+            </Grid>
+          </Grid>
+        </Box>
+      </Container>
     </div>
   );
 };
 
-export default Home;
-
+export default HomePage;

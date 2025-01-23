@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
 import pool from '../db/connection.js';
+import jwt from "jsonwebtoken";
 
 export const clubLogin = async (req, res) => {
     const { username, password } = req.body;
@@ -47,7 +48,7 @@ export const clubRegister = async (req, res) => {
     try {
         // Check if the username or email already exists
         const [existingUsers] = await pool.query(
-            "SELECT * FROM student WHERE username = ? OR name = ?",
+            "SELECT * FROM club WHERE username = ? OR name = ?",
             [username, name]
         );
 
@@ -64,7 +65,7 @@ export const clubRegister = async (req, res) => {
         // Insert the new student into the database
         const [result] = await pool.query(
             "INSERT INTO club (name,username, password) VALUES (?, ?, ?)",
-            [name, username, password]
+            [name, username, hashedPassword]
         );
 
         // Respond with success
@@ -95,37 +96,70 @@ export const clubLogout = async (req, res) => {
 }
 export const getClubProfile = async (req, res) => {
     try {
-        const userId = req.user.userId; // Extracted from the authenticated user's token
+        const token = req.cookies.token||""// Extracted from the authenticated user's token
         // console.log(req.user);
         // Fetch student details from the database
+        const decoded =  jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.userId
+
         const [rows] = await pool.query(
-            "SELECT name, username FROM club WHERE cid = ?",
+            "SELECT * FROM club WHERE cid = ?",
             [userId]
         );
-
+        const [ro] = await pool.query(
+            "SELECT * FROM events WHERE club_id = ?",
+            [userId]
+        );
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: "club not found" });
         }
 
-        const club = rows[0];
-        return res.status(200).json({ success: true, club });
+        const club=rows[0];
+        const events=ro;
+        // console.log(events)
+        return res.status(200).json({ success: true,club,events});
     } catch (error) {
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 }
+// export const addEvent = async (req, res) => {
+//     try {
+//         const clubId = req.user.userId;
+//         const { name, points, description } = req.body;
+
+//         if(!name || !points || !description){
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "All required fields must be provided",
+//             });
+//         }
+//         const [rows] = await pool.query("INSERT INTO events (name,points,club_id, description) VALUES (?, ?, ?,?)", [
+//             name, points, clubId, description
+//         ])
+//         const event=rows[0];
+//         return res.status(201).json({
+//             success: true,
+//             message: "Event Added successfully",
+//             event // Return the ID of the newly created student
+//         });
+//     } catch (error) {
+//         console.error("Failed To Add Event ,", error);
+//         res.status(500).json({ success: false, message: "Server error" });
+//     }
+// }
 export const addEvent = async (req, res) => {
     try {
         const clubId = req.user.userId;
-        const { name, points, description } = req.body;
-
-        if(!name || !points || !description){
+        const { name, points, description,event_date } = req.body;
+        // console.log(req.body)
+        if(!name || !points || !description || !event_date){
             return res.status(400).json({
                 success: false,
                 message: "All required fields must be provided",
             });
         }
-        const [rows] = await pool.query("INSERT INTO events (name,points,club_id, description) VALUES (?, ?, ?,?)", [
-            name, points, clubId, description
+        const [rows] = await pool.query("INSERT INTO events (name,points,club_id, description,event_date) VALUES (?, ?, ?,?,?)", [
+            name, points, clubId, description,event_date
         ])
         const event=rows[0];
         return res.status(201).json({
@@ -139,25 +173,102 @@ export const addEvent = async (req, res) => {
     }
 
 }
-export const delEvent=async(req,res)=>{
-    const {name}=req.body;
-    const clubId = req.user.userId;
-    if(!name){
-        return res.status(400).json({
-            success: false,
-            message: "All required fields must be provided",
-        });
+// export const delEvent=async(req,res)=>{
+//     const {name}=req.body;
+//     const clubId = req.user.userId;
+//     if(!name){
+//         return res.status(400).json({
+//             success: false,
+//             message: "All required fields must be provided",
+//         });
+//     }
+//     try{
+//         const [rows] = await pool.query("DELETE FROM events WHERE name=? AND club_id=?", [
+//             name, clubId
+//         ])
+//         return res.status(201).json({
+//             success: true,
+//             message: "Event Deleted successfully",
+//         });
+//     }catch(error){
+//         console.error("Failed To delete Event ,", error);
+//         res.status(500).json({ success: false, message: "Server error" })
+//     }
+// }
+export const getStudents = async (req, res) => {
+    const { eid } = req.body;
+  
+    if (!eid) {
+      return res.status(400).json({
+        success: false,
+        message: "Event ID is required",
+      });
     }
-    try{
-        const [rows] = await pool.query("DELETE FROM events WHERE name=? AND club_id=?", [
-            name, clubId
-        ])
-        return res.status(201).json({
-            success: true,
-            message: "Event Deleted successfully",
-        });
-    }catch(error){
-        console.error("Failed To delete Event ,", error);
-        res.status(500).json({ success: false, message: "Server error" })
+  
+    try {
+        const [rows] = await pool.query(
+            `SELECT 
+              s.sid, 
+              s.name, 
+              s.email, 
+              es.approved
+            FROM 
+              event_student es
+            INNER JOIN 
+              student s
+            ON 
+              es.student_id = s.sid
+            WHERE 
+              es.event_id = ?`,
+            [eid]
+          );
+      return res.status(200).json({
+        success: true,
+        message: "Students fetched successfully",
+        students: rows,
+      });
+    } catch (error) {
+      console.error("Failed to get students:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
     }
-}
+  };
+  
+  export const verifyStudents = async (req, res) => {
+    const { eid, studentIds } = req.body;
+  
+    if (!eid || !studentIds || studentIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Event ID and student IDs are required",
+      });
+    }
+  
+    try {
+      const [result] = await pool.query(
+        `UPDATE event_student SET approved = true WHERE event_id = ? AND student_id IN (?) AND approved = false`,
+        [eid, studentIds]
+      );
+  
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "No matching unapproved entries found",
+        });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: "Students approved successfully",
+      });
+    } catch (error) {
+      console.error("Failed to verify students:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
+    }
+  };
+  

@@ -95,27 +95,124 @@ export const counsellorLogout=async(req,res)=>{
 
 export const getCounsellorProfile=async(req,res)=>{
     try {
-        const userId = req.user.userId; // Extracted from the authenticated user's token
-        // console.log(req.user);
-        // Fetch student details from the database
-        const [rows] = await pool.query(
-          "SELECT name, email, username FROM counsellor WHERE cid = ?",
-          [userId]
-        );
-        const [rows2] = await pool.query(
-            "SELECT usn,name, email, department_id FROM student WHERE counsellor_id = ?",
-            [userId]
-          );
-        if (rows.length === 0) {
-          return res.status(404).json({ success: false, message: "counsellor not found" });
-        }
-    
-        const counsellor = rows[0];
-        const students = rows2[0];
-        return res.status(200).json({ success: true, counsellor,students });
-      } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error", error: error.message });
-      }
+  const userId = req.user.userId; // Get the counsellor ID from the token payload
+
+  try {
+    // Fetch students under the counsellor
+    const [students] = await pool.query(
+      `SELECT *
+       FROM student 
+       WHERE counsellor_id = ?`,
+      [userId]
+    );
+
+    if (students.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No students found under this counsellor",
+      });
+    }
+
+    // Fetch the department ID from the first student
+    const departmentId = students[0].department_id;
+
+    // Fetch the department name based on the department ID
+    const [departmentRows] = await pool.query(
+      `SELECT name AS department_name 
+       FROM department 
+       WHERE did = ?`,
+      [departmentId]
+    );
+
+    if (departmentRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Department not found",
+      });
+    }
+
+    const departmentName = departmentRows[0].department_name;
+
+    // Initialize the response array
+    const studentsWithEvents = [];
+
+    // Fetch events for each student
+    for (const student of students) {
+      const [department] = await pool.query(
+        `SELECT name
+         FROM department 
+         WHERE did = ?`,
+        [student.department_id]
+      );
+      // dname=department[0]
+      const [events] = await pool.query(
+        `SELECT 
+           es.event_id,
+           e.name AS event_name,
+           es.points
+         FROM event_student es
+         JOIN events e ON es.event_id = e.eid
+         WHERE es.student_id = ? AND es.approved = 1`,
+        [student.sid]
+      );
+      const dname=department[0]
+      // console.log(department[0])
+      // Format the events
+      const formattedEvents = events.map((event) => ({
+        event_id: event.event_id,
+        name: event.event_name,
+        points: event.points || 0, // Use 0 if points are NULL
+      }));
+
+      // Add the student and their events to the response array
+      studentsWithEvents.push({
+        student_id: student.sid,
+        usn:student.usn,
+        name: student.name,
+        email:student.email,
+        department:dname.name,
+        events: formattedEvents,
+      });
+    }
+
+    // Fetch counsellor details
+    const [counsellorRows] = await pool.query(
+      `SELECT cid, name, email 
+       FROM counsellor 
+       WHERE cid = ?`,
+      [userId]
+    );
+
+    const counsellor = counsellorRows[0];
+
+    // Return the formatted response
+    return res.status(200).json({
+      success: true,
+      counsellor: {
+        id: counsellor.cid,
+        name: counsellor.name,
+        email: counsellor.email,
+        department: departmentName, // Assign the dynamically fetched department name
+      },
+      students: studentsWithEvents,
+    });
+  } catch (error) {
+    console.error("Error fetching students under counsellor:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+ }
+  catch(err){
+    console.error("Error fetching students under counsellor:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
 }
 export const getCounsellors=async(req,res)=>{
     try{
@@ -132,3 +229,56 @@ export const getCounsellors=async(req,res)=>{
         })
     }
 }
+export const getStudent = async (req, res) => {
+  // const { studentID } = req.body;
+  // console.log(req.body.studentID)
+  const {studentID}=req.body;
+  // console.log(studentID.studentId)
+  const id=studentID.studentId;
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide student id",
+    });
+  }
+
+  try {
+    // Query to get events and total points of the student
+    // const [student]=await pool.query(
+    //   `SELECT * FROM student WHERE sid=?`,[id]
+    // );
+    const [student] = await pool.query(
+      `SELECT 
+         s.sid, s.usn, s.name, s.email, s.department_id, s.counsellor_id, 
+         d.name AS department_name, 
+         c.name AS counsellor_name 
+       FROM student s
+       LEFT JOIN department d ON s.department_id = d.did
+       LEFT JOIN counsellor c ON s.counsellor_id = c.cid
+       WHERE s.sid = ?`,
+      [id]
+    );
+    const [rows] = await pool.query(
+      `SELECT es.event_id, e.name, e.points ,e.event_date
+       FROM event_student es
+       JOIN events e ON es.event_id = e.eid
+       WHERE es.student_id = ? AND es.approved=1`,
+      [id]
+    );
+    
+    // Calculate total points
+    const totalPoints = rows.reduce((acc, event) => acc + event.points, 0);
+
+    // console.log("EVENTS = ", rows);
+
+    return res.status(200).json({
+      success: true,
+      events: rows,
+      students:student,
+      totalPoints: totalPoints,  // Send total points along with events
+    });
+  } catch (error) {
+    console.error("Failed To fetch Events ,", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

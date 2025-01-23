@@ -1,111 +1,107 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const ClubRegister = () => {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const validate = () => {
+    const newErrors = {};
+    if (!name.trim()) newErrors.name = "Club name is required";
+    if (!username.trim()) newErrors.username = "Username is required";
+    if (!password.trim() || password.length < 6)
+      newErrors.password = "Password must be at least 6 characters long";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
+
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/club/register`, { name, username, password });
+      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/register`;
+      const response = await axios.post(URL, { name, username, password });
       toast.success(response.data.message, {
-        position: "top-right",
+        position: 'top-right',
         autoClose: 3000,
-        hideProgressBar: false,
       });
-      navigate("api/v1/club/login");
+      if (response.data.success) {
+        setName("")
+        setUsername("")
+        setPassword("")
+        setTimeout(() => {
+          navigate('/api/v1/club/login', {
+            state: response?.data?.data,
+          });
+        }, 2000);
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || "An error occurred", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-      });
+      if (error.response && error.response.status === 400) {
+        toast.error('User already exists.', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      } else {
+        toast.error('An unexpected error occurred.', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      }
     }
   };
 
-  const containerStyle = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-    fontFamily: "Arial, sans-serif",
-  };
-
-  const formWrapperStyle = {
-    background: "#fff",
-    padding: "2rem",
-    borderRadius: "10px",
-    boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
-    width: "400px",
-    textAlign: "center",
-  };
-
-  const headingStyle = {
-    marginBottom: "1.5rem",
-    fontSize: "1.8rem",
-    fontWeight: "bold",
-    color: "#444",
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "0.8rem",
-    marginBottom: "1rem",
-    border: "1px solid #ccc",
-    borderRadius: "5px",
-    fontSize: "1rem",
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: "0.8rem",
-    backgroundColor: "#2575fc",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    fontSize: "1rem",
-    cursor: "pointer",
-    marginTop: "1rem",
-  };
-
   return (
-    <div style={containerStyle}>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <ToastContainer />
-      <div style={formWrapperStyle}>
-        <h2 style={headingStyle}>Club Register</h2>
+      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+        <h2 className="text-2xl font-bold mb-6 text-center">Club Registration</h2>
         <form onSubmit={handleRegister}>
-          <input
-            style={inputStyle}
-            type="text"
-            placeholder="Club Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <input
-            style={inputStyle}
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-          <input
-            style={inputStyle}
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button style={buttonStyle} type="submit">
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2">Club Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            {errors.username && (
+              <p className="text-red-500 text-sm">{errors.username}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="w-full p-2 bg-blue-600 text-white rounded mt-4"
+          >
             Register
           </button>
         </form>

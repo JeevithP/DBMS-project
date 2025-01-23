@@ -65,7 +65,7 @@ export const studentRegister = async (req, res) => {
         "SELECT * FROM counsellor WHERE name=?",
         [counsellor]
       );
-      console.log(getCounsId[0]);
+      // console.log(getCounsId[0]);
       const counsellor_id=getCounsId[0].cid;
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -111,17 +111,27 @@ export const getStudentProfile=async (req,res)=>{
         const decoded =  jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId
         // Fetch student details from the database
-        const [rows] = await pool.query(
-          "SELECT sid, usn, name, email, department_id, counsellor_id,username FROM student WHERE sid = ?",
+        // const [rows] = await pool.query(
+        //   "SELECT sid, usn, name, email, department_id, counsellor_id,username FROM student WHERE sid = ?",
+        //   [userId]
+        // );
+        const [student] = await pool.query(
+          `SELECT 
+             s.sid, s.usn, s.name, s.email, s.department_id, s.counsellor_id, 
+             d.name AS department_name, 
+             c.name AS counsellor_name 
+           FROM student s
+           LEFT JOIN department d ON s.department_id = d.did
+           LEFT JOIN counsellor c ON s.counsellor_id = c.cid
+           WHERE s.sid = ?`,
           [userId]
         );
-    
-        if (rows.length === 0) {
+        if (student.length === 0) {
           return res.status(404).json({ success: false, message: "Student not found" });
         }
-    
-        const student = rows[0];
-        return res.status(200).json({ success: true, student });
+        // console.log(student[0])
+        const students = student[0];
+        return res.status(200).json({ success: true, students});
       } catch (error) {
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
       }
@@ -162,9 +172,9 @@ export const studentProfileUpdate = async (req, res) => {
 
     try {
         // Query to get events not registered by the student
-        const eventsNotRegisteredByStudent = await db.query(`
+        const eventsNotRegisteredByStudent = await pool.query(`
             SELECT * FROM events 
-            WHERE event_id NOT IN (
+            WHERE eid NOT IN (
                 SELECT event_id FROM event_student
                 WHERE student_id = ?
             )
@@ -182,7 +192,7 @@ export const studentProfileUpdate = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Events Fetched Successfully",
-            data: eventsNotRegisteredByStudent
+            data: eventsNotRegisteredByStudent[0]
         });
     } catch (error) {
         console.error(error);
@@ -193,9 +203,13 @@ export const studentProfileUpdate = async (req, res) => {
     }
 };
 export const registerForEvent = async (req, res) => {
-    const student_id = req.user.userId; // Extract student ID from authenticated user
+    const token = req.cookies.token||""
+        // console.log('token backend')
+        // console.log(token.length)
+    const decoded =  jwt.verify(token, process.env.JWT_SECRET);
+    const student_id = decoded.userId
     const { event_id } = req.body; // Get event_id from the request body
-
+    
     // Validate input
     if (!event_id) {
         return res.status(400).json({
@@ -206,28 +220,27 @@ export const registerForEvent = async (req, res) => {
 
     try {
         // Check if the event exists
-        const eventExists = await db.query("SELECT * FROM events WHERE event_id = ?", [event_id]);
+        const eventExists = await pool.query("SELECT * FROM events WHERE eid = ?", [event_id]);
         if (eventExists.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: "Event not found",
             });
         }
-
         // Check if the student is already registered for the event
-        const alreadyRegistered = await db.query(
+        const alreadyRegistered = await pool.query(
             "SELECT * FROM event_student WHERE student_id = ? AND event_id = ?",
             [student_id, event_id]
         );
-        if (alreadyRegistered.length > 0) {
+        if (alreadyRegistered[0].length > 0) {
             return res.status(400).json({
                 success: false,
                 message: "You are already registered for this event",
             });
         }
-
+        
         // Register the student for the event
-        await db.query(
+        await pool.query(
             "INSERT INTO event_student (student_id, event_id, approved) VALUES (?, ?, ?)",
             [student_id, event_id, false]
         );
@@ -245,3 +258,41 @@ export const registerForEvent = async (req, res) => {
         });
     }
 };
+
+// Backend: Get events by student ID and total activity points
+
+export const getEventsByStudentID = async (req, res) => {
+  const { studentID } = req.body;
+  if (!studentID) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide student id",
+    });
+  }
+
+  try {
+    // Query to get events and total points of the student
+    const [rows] = await pool.query(
+      `SELECT es.event_id, e.name, e.points ,e.event_date
+       FROM event_student es
+       JOIN events e ON es.event_id = e.eid
+       WHERE es.student_id = ? AND es.approved=1`,
+      [studentID]
+    );
+    // Calculate total points
+    const totalPoints = rows.reduce((acc, event) => acc + event.points, 0);
+
+    // console.log("EVENTS = ", rows);
+
+    return res.status(200).json({
+      success: true,
+      events: rows,
+      totalPoints: totalPoints,  // Send total points along with events
+    });
+  } catch (error) {
+    console.error("Failed To fetch Events ,", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+

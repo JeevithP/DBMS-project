@@ -6,10 +6,15 @@ import ClubLogin from "../pages/ClubLogin";
 import ClubRegister from "../pages/ClubRegister";
 import CounsellorLogin from "../pages/CounsellorLogin";
 import CounsellorRegister from "../pages/CounsellorRegister";
+import StudentHome from "../pages/StudentHome";
+import ClubHome from "../pages/ClubHome";
+import AddEvent from "../pages/AddEvent";
+import DeleteEvent from "../pages/DeleteEvent";
+import EventStudents from "../pages/EventStudents";
+import ViewEvents from "../pages/ViewEvents";
+import CounsellorHome from "../pages/CounsellorHome";
+import CounsellorStudent from "../pages/CounsellorStudent";
 import Home from "../pages/Home";
-// import StudentProfile from "../pages/StudentProfile";
-// import ClubProfile from "../pages/ClubProfile";
-// import CounsellorProfile from "../pages/CounsellorProfile";
 import AuthLayouts from "../layout";
 
 
@@ -44,21 +49,39 @@ const router = createBrowserRouter([
       },
       {
         path: "api/v1/student/profile",
-        element: <AuthLayouts><Home /></AuthLayouts>,
-        // children: [
-        //   {
-        //     path: "profile",
-        //     element: <Activities/>,
-        //   },
-        //   // {
-        //   //   path: "club/profile",
-        //   //   element: <ClubProfile />,
-        //   // },
-        //   // {
-        //   //   path: "counsellor/profile",
-        //   //   element: <CounsellorProfile />,
-        //   // },
-        // ],
+        element: <AuthLayouts><StudentHome /></AuthLayouts>,
+      },
+      {
+        path: "api/v1/student/get-events",
+        element: <AuthLayouts><ViewEvents /></AuthLayouts>,
+      },
+      {
+        path: "api/v1/club/profile",
+        element: <AuthLayouts><ClubHome /></AuthLayouts>,
+      },
+      {
+        path: "api/v1/club/add-event",
+        element: <AuthLayouts><AddEvent /></AuthLayouts>,
+      },
+      {
+        path: "api/v1/club/delete-event",
+        element: <AuthLayouts><DeleteEvent /></AuthLayouts>,
+      },
+      {
+        path: "api/v1/club/event/:eid",
+        element: <AuthLayouts><EventStudents /></AuthLayouts>, 
+      },
+      {
+        path: "api/v1/counsellor/profile",
+        element: <AuthLayouts><CounsellorHome /></AuthLayouts>, 
+      },
+      {
+        path: "api/v1/counsellor/students/:studentId",
+        element: <AuthLayouts><CounsellorStudent /></AuthLayouts>, 
+      },
+      {
+        path: "/",
+        element: <AuthLayouts><Home /></AuthLayouts>, 
       },
     ],
   },

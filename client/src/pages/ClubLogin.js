@@ -1,121 +1,108 @@
-import React, { useState } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setClubToken } from '../redux/clubUserSlice';
 
 const ClubLogin = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
   const handleLogin = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/login`;
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/club/login`, { username, password }, { withCredentials: true });
-      toast.success(response.data.message);
-      navigate("/club/profile");
+      const response = await axios({
+        method: 'post',
+        url: URL,
+        data: {
+          username,
+          password
+        },
+        withCredentials: true
+      });
+      toast.success(response.data.message, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+      });
+      if (response.data.success) {
+        dispatch(setClubToken(response?.data?.token));
+        localStorage.setItem('token',response?.data?.token);
+        navigate('/api/v1/club/profile');
+      }
     } catch (error) {
-      toast.error("Login failed");
+      if (error.response && error.response.status === 404) {
+        toast.error("Club does not exist!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+        });
+      } else if (error.response && error.response.status === 401) {
+        toast.error("Invalid password", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+        });
+      } else {
+        toast.error("An unexpected error occurred.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+        });
+      }
     }
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>Club Login</h2>
-      <form onSubmit={handleLogin} style={styles.form}>
-        <div style={styles.inputGroup}>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
-            required
-            style={styles.input}
-          />
-        </div>
-        <div style={styles.inputGroup}>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            required
-            style={styles.input}
-          />
-        </div>
-        <div style={styles.submitButtonContainer}>
-          <button type="submit" style={styles.submitButton}>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <ToastContainer />
+      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+        <h2 className="text-2xl font-bold mb-6 text-center">Club Login</h2>
+        <form onSubmit={handleLogin}>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded"
+              required
+            />
+          </div>
+          <button type="submit" className="w-full p-2 bg-blue-600 text-white rounded mt-4">
             Login
           </button>
-        </div>
-      </form>
-      <div style={styles.registerLinkContainer}>
-        <p style={styles.registerText}>Don't have an account?</p>
-        <button onClick={() => navigate("/api/v1/club/register")} style={styles.registerButton}>Register</button>
+        </form>
+        <div className="mt-4 text-center">
+        <p className="text-sm text-gray-600">Don't have an account?</p>
+        <button
+          onClick={() => navigate("/api/v1/club/register")}
+          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md font-medium"
+        >
+          Register
+        </button>
+      </div>
       </div>
     </div>
   );
 };
 
-const styles = {
-  container: {
-    maxWidth: '400px',
-    margin: '50px auto',
-    padding: '20px',
-    backgroundColor: '#f7f7f7',
-    borderRadius: '10px',
-    boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
-  },
-  heading: {
-    textAlign: 'center',
-    marginBottom: '20px',
-    color: '#333',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  inputGroup: {
-    marginBottom: '15px',
-  },
-  input: {
-    width: '100%',
-    padding: '12px',
-    borderRadius: '5px',
-    border: '1px solid #ddd',
-    fontSize: '16px',
-  },
-  submitButtonContainer: {
-    textAlign: 'center',
-  },
-  submitButton: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
-  },
-  registerLinkContainer: {
-    textAlign: 'center',
-    marginTop: '10px',
-  },
-  registerText: {
-    fontSize: '14px',
-    color: '#555',
-  },
-  registerButton: {
-    backgroundColor: '#008CBA',
-    color: 'white',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    marginTop: '5px',
-  },
-};
-
 export default ClubLogin;
+

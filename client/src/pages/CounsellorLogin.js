@@ -1,24 +1,45 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { setToken } from '../redux/counsellorSlice';
 
 const CounsellorLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    const URL=`${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/login`;
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/login`, { username, password });
+      const response = await axios({
+        method :'post',
+        url : URL,
+        data : {
+          username ,
+          password
+        },
+        withCredentials : true
+      })
       toast.success(response.data.message, {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
       });
-      navigate("/counsellor/profile");
+      // console.log(response.data.token)
+      if(response.data.success){
+        dispatch(setToken(response?.data?.token))
+      //  dispatch(setUser(response?.data?.user))
+        localStorage.setItem('token',response.data.token)
+        navigate('/api/v1/counsellor/profile')
+    }
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred", {
         position: "top-right",
@@ -71,7 +92,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
-    background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+    background: "#fff",
     fontFamily: "Arial, sans-serif",
   },
   formWrapper: {
