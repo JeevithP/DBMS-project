@@ -1,13 +1,26 @@
 import express from "express";
 import isAuthenticated from "../middleware/isAuthenticated.js";
-import { counsellorLogin, counsellorLogout, counsellorRegister, getCounsellorProfile, getCounsellors,getStudent } from "../controller/counsellor.controller.js";
+import {
+    alertStudent,
+    counsellorLogin,
+    counsellorLogout,
+    counsellorRegister,
+    getCounsellorProfile,
+    getCounsellors,
+    getStudent,
+} from "../controller/counsellor.controller.js";
 
-const router=express.Router();
+const router = express.Router();
 
 router.route("/get-all-counsellors").get(getCounsellors);
 router.route("/register").post(counsellorRegister);
 router.route("/login").post(counsellorLogin);
 router.route("/logout").get(counsellorLogout);
-router.route("/profile").get(isAuthenticated(["counsellor"]), getCounsellorProfile);
-router.route("/student").post(isAuthenticated(["counsellor"]),getStudent);
+router
+    .route("/profile")
+    .get(isAuthenticated(["counsellor"]), getCounsellorProfile);
+router.route("/student").post(isAuthenticated(["counsellor"]), getStudent);
+
+router.route("/send-mail").get(isAuthenticated(["counsellor"], alertStudent));
+
 export default router;
