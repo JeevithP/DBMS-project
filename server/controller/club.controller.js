@@ -1,12 +1,13 @@
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
-import pool from '../db/connection.js';
+import pool from "../db/connection.js";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../utils/sendMail.js";
 
 export const clubLogin = async (req, res) => {
     const { username, password } = req.body;
 
-    if(!username || !password){
+    if (!username || !password) {
         return res.status(400).json({
             success: false,
             message: "All required fields must be provided",
@@ -19,27 +20,32 @@ export const clubLogin = async (req, res) => {
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "User not found" });
         }
 
         const user = rows[0];
 
-        const isPassword=await bcrypt.compare(password,user.password);
+        const isPassword = await bcrypt.compare(password, user.password);
         if (!isPassword) {
-            return res.status(401).json({ success: false, message: "Invalid password" });
+            return res
+                .status(401)
+                .json({ success: false, message: "Invalid password" });
         }
 
         generateToken(res, user, "club", `Welcome back, ${user.name}`);
-
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error" });
+        return res
+            .status(500)
+            .json({ success: false, message: "Server error" });
     }
-}
+};
 
 export const clubRegister = async (req, res) => {
     const { name, username, password } = req.body;
 
-    if(!name || !username || !password){
+    if (!name || !username || !password) {
         return res.status(400).json({
             success: false,
             message: "All required fields must be provided",
@@ -78,133 +84,113 @@ export const clubRegister = async (req, res) => {
         console.error("Registration error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
-}
+};
 
 export const clubLogout = async (req, res) => {
     try {
         return res.status(200).cookie("token", "", { maxAge: 0 }).json({
             message: "Logged Out Successfully.",
-            success: true
-        })
+            success: true,
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({
             success: false,
-            message: "Failed to logout"
-        })
+            message: "Failed to logout",
+        });
     }
-}
+};
+
 export const getClubProfile = async (req, res) => {
     try {
-        const token = req.cookies.token||""// Extracted from the authenticated user's token
-        // console.log(req.user);
-        // Fetch student details from the database
-        const decoded =  jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.userId
+        const token = req.cookies.token || ""; // Extracted from the authenticated user's token
 
-        const [rows] = await pool.query(
-            "SELECT * FROM club WHERE cid = ?",
-            [userId]
-        );
+        // Fetch student details from the database
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.userId;
+
+        const [rows] = await pool.query("SELECT * FROM club WHERE cid = ?", [
+            userId,
+        ]);
+
         const [ro] = await pool.query(
             "SELECT * FROM events WHERE club_id = ?",
             [userId]
         );
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: "club not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "club not found" });
         }
 
-        const club=rows[0];
-        const events=ro;
-        // console.log(events)
-        return res.status(200).json({ success: true,club,events});
-    } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error", error: error.message });
-    }
-}
-// export const addEvent = async (req, res) => {
-//     try {
-//         const clubId = req.user.userId;
-//         const { name, points, description } = req.body;
+        const club = rows[0];
+        const events = ro;
 
-//         if(!name || !points || !description){
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "All required fields must be provided",
-//             });
-//         }
-//         const [rows] = await pool.query("INSERT INTO events (name,points,club_id, description) VALUES (?, ?, ?,?)", [
-//             name, points, clubId, description
-//         ])
-//         const event=rows[0];
-//         return res.status(201).json({
-//             success: true,
-//             message: "Event Added successfully",
-//             event // Return the ID of the newly created student
-//         });
-//     } catch (error) {
-//         console.error("Failed To Add Event ,", error);
-//         res.status(500).json({ success: false, message: "Server error" });
-//     }
-// }
+        return res.status(200).json({ success: true, club, events });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+};
+
 export const addEvent = async (req, res) => {
     try {
         const clubId = req.user.userId;
-        const { name, points, description,event_date } = req.body;
+        const { name, points, description, event_date } = req.body;
         // console.log(req.body)
-        if(!name || !points || !description || !event_date){
+        if (!name || !points || !description || !event_date) {
             return res.status(400).json({
                 success: false,
                 message: "All required fields must be provided",
             });
         }
-        const [rows] = await pool.query("INSERT INTO events (name,points,club_id, description,event_date) VALUES (?, ?, ?,?,?)", [
-            name, points, clubId, description,event_date
-        ])
-        const event=rows[0];
+        const [rows] = await pool.query(
+            "INSERT INTO events (name,points,club_id, description,event_date) VALUES (?, ?, ?,?,?)",
+            [name, points, clubId, description, event_date]
+        );
+
+        const event = rows[0];
+
+        // Fetch list of all students
+        const students = await fetchStudents();
+        if (students === null) {
+            console.log("Failed to send mail to students");
+        } else {
+            const subject = `New Event: ${name}`;
+            const message = `Hello, a new event has been created!\n\nEvent Details:\nName: ${name}\nPoints: ${points}\nDescription: ${description}\n\nCheck the event portal for more details.`;
+
+            for (const student of students) {
+                const { email, name } = student;
+                await sendEmail(email, name, subject, message);
+            }
+
+            console.log("Emails sent to all students.");
+        }
+
         return res.status(201).json({
             success: true,
             message: "Event Added successfully",
-            event // Return the ID of the newly created student
+            event, // Return the ID of the newly created student
         });
     } catch (error) {
         console.error("Failed To Add Event ,", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
+};
 
-}
-// export const delEvent=async(req,res)=>{
-//     const {name}=req.body;
-//     const clubId = req.user.userId;
-//     if(!name){
-//         return res.status(400).json({
-//             success: false,
-//             message: "All required fields must be provided",
-//         });
-//     }
-//     try{
-//         const [rows] = await pool.query("DELETE FROM events WHERE name=? AND club_id=?", [
-//             name, clubId
-//         ])
-//         return res.status(201).json({
-//             success: true,
-//             message: "Event Deleted successfully",
-//         });
-//     }catch(error){
-//         console.error("Failed To delete Event ,", error);
-//         res.status(500).json({ success: false, message: "Server error" })
-//     }
-// }
 export const getStudents = async (req, res) => {
     const { eid } = req.body;
-  
+
     if (!eid) {
-      return res.status(400).json({
-        success: false,
-        message: "Event ID is required",
-      });
+        return res.status(400).json({
+            success: false,
+            message: "Event ID is required",
+        });
     }
-  
+
     try {
         const [rows] = await pool.query(
             `SELECT 
@@ -221,54 +207,65 @@ export const getStudents = async (req, res) => {
             WHERE 
               es.event_id = ?`,
             [eid]
-          );
-      return res.status(200).json({
-        success: true,
-        message: "Students fetched successfully",
-        students: rows,
-      });
-    } catch (error) {
-      console.error("Failed to get students:", error);
-      res.status(500).json({
-        success: false,
-        message: "Server error",
-      });
-    }
-  };
-  
-  export const verifyStudents = async (req, res) => {
-    const { eid, studentIds } = req.body;
-  
-    if (!eid || !studentIds || studentIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Event ID and student IDs are required",
-      });
-    }
-  
-    try {
-      const [result] = await pool.query(
-        `UPDATE event_student SET approved = true WHERE event_id = ? AND student_id IN (?) AND approved = false`,
-        [eid, studentIds]
-      );
-  
-      if (result.affectedRows === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "No matching unapproved entries found",
+        );
+        return res.status(200).json({
+            success: true,
+            message: "Students fetched successfully",
+            students: rows,
         });
-      }
-  
-      return res.status(200).json({
-        success: true,
-        message: "Students approved successfully",
-      });
     } catch (error) {
-      console.error("Failed to verify students:", error);
-      res.status(500).json({
-        success: false,
-        message: "Server error",
-      });
+        console.error("Failed to get students:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
     }
-  };
-  
+};
+
+export const verifyStudents = async (req, res) => {
+    const { eid, studentIds } = req.body;
+
+    if (!eid || !studentIds || studentIds.length === 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Event ID and student IDs are required",
+        });
+    }
+
+    try {
+        const [result] = await pool.query(
+            `UPDATE event_student SET approved = true WHERE event_id = ? AND student_id IN (?) AND approved = false`,
+            [eid, studentIds]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No matching unapproved entries found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Students approved successfully",
+        });
+    } catch (error) {
+        console.error("Failed to verify students:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
+    }
+};
+
+// Service logic
+
+const fetchStudents = async (req, res) => {
+    try {
+        const [rows] = await pool.query(`SELECT sid, name, email FROM student`);
+        return rows;
+    } catch (error) {
+        console.error("Failed to get students:", error);
+        return null;
+    }
+};
