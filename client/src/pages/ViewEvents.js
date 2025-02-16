@@ -14,7 +14,7 @@
 
 //   const fetchUserDetails = async () => {
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/profile`;
+//       const URL = `http://localhost:8080/api/v1/student/profile`;
 //       const response = await axios.get(URL, { withCredentials: true });
 //       dispatch(setUser(response.data.student));
 //     } catch (error) {
@@ -25,7 +25,7 @@
 //   const fetchStudentEvents = async () => {
 //     console.log(user)
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/get-events-by-id`;
+//       const URL = `http://localhost:8080/api/v1/student/get-events-by-id`;
 //       const response = await axios.post(URL, 
 //        { studentID: user.sid},
 //        { withCredentials: true }  // Assuming `user.sid` holds the student ID
@@ -125,7 +125,7 @@ const StudentEvents = () => {
   // Function to fetch user details from API and dispatch to Redux store
   const fetchUserDetails = async () => {
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/profile`;
+      const URL = `http://localhost:8080/api/v1/student/profile`;
       const response = await axios.get(URL, { withCredentials: true });
       dispatch(setUser(response.data.student));
     } catch (error) {
@@ -138,7 +138,7 @@ const StudentEvents = () => {
     if (!user) return; // If user is not available, return early
 
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/get-events-by-id`;
+      const URL = `http://localhost:8080/api/v1/student/get-events-by-id`;
       const response = await axios.post(
         URL,
         { studentID: user.sid },

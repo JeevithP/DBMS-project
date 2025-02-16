@@ -24,9 +24,9 @@
 //   useEffect(() => {
 //     const fetchData = async () => {
 //       try {
-//         const departmentResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/department`);
+//         const departmentResponse = await axios.get(`http://localhost:8080/api/v1/department`);
 //         setDepartments(departmentResponse.data.departments);
-//         const counsellorResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/get-all-counsellors`);
+//         const counsellorResponse = await axios.get(`http://localhost:8080/api/v1/counsellor/get-all-counsellors`);
 //         setCounsellors(counsellorResponse.data.counsellors);
 //       } catch (error) {
 //         console.error("Error fetching data:", error.response?.data?.message || error.message);
@@ -68,7 +68,7 @@
 //       return;
 //     }
 
-//     const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/register`;
+//     const URL = `http://localhost:8080/api/v1/student/register`;
 //     try {
 //       const response = await axios.post(URL, formData);
 //       toast.success(response.data.message, {
@@ -297,9 +297,9 @@ const StudentRegister = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const departmentResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/department`);
+        const departmentResponse = await axios.get(`http://localhost:8080/api/v1/department`);
         setDepartments(departmentResponse.data.departments);
-        const counsellorResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/get-all-counsellors`);
+        const counsellorResponse = await axios.get(`http://localhost:8080/api/v1/counsellor/get-all-counsellors`);
         setCounsellors(counsellorResponse.data.counsellors);
       } catch (error) {
         console.error("Error fetching data:", error.response?.data?.message || error.message);
@@ -338,7 +338,7 @@ const StudentRegister = () => {
       return;
     }
 
-    const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/register`;
+    const URL = `http://localhost:8080/api/v1/student/register`;
     try {
       const response = await axios.post(URL, formData);
       toast.success(response.data.message);

@@ -15,7 +15,7 @@ const CounsellorRegister = () => {
     e.preventDefault();
     e.stopPropagation()
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/register`, { name, email, username, password });
+      const response = await axios.post(`http://localhost:8080/api/v1/counsellor/register`, { name, email, username, password });
       toast.success(response.data.message, {
         position: "top-right",
         autoClose: 3000,

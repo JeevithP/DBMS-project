@@ -27,7 +27,7 @@ const ClubRegister = () => {
     if (!validate()) return;
 
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/register`;
+      const URL = `http://localhost:8080/api/v1/club/register`;
       const response = await axios.post(URL, { name, username, password });
       toast.success(response.data.message, {
         position: 'top-right',

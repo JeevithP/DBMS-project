@@ -102,7 +102,7 @@ export const counsellorLogout = async (req, res) => {
 export const getCounsellorProfile = async (req, res) => {
     try {
         const userId = req.user.userId; // Get the counsellor ID from the token payload
-
+        
         try {
             // Fetch students under the counsellor
             const [students] = await pool.query(
@@ -242,6 +242,7 @@ export const getStudent = async (req, res) => {
     const { studentID } = req.body;
     // console.log(studentID.studentId)
     const id = studentID.studentId;
+    
     if (!id) {
         return res.status(400).json({
             success: false,
@@ -293,7 +294,7 @@ export const getStudent = async (req, res) => {
 export const alertStudent = async (req, res) => {
     try {
         const { studentID } = req.body;
-
+        console.log(studentID);
         const [result] = await pool.query(
             `SELECT sid, usn, name, email FROM student WHERE sid = ?`,
             [studentID]

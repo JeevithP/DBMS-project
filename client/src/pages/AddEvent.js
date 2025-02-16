@@ -16,7 +16,7 @@
 //   const handleAddEvent = async (e) => {
 //     e.preventDefault();
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/add-event`;
+//       const URL = `http://localhost:8080/api/v1/club/add-event`;
 //       const response = await axios.post(
 //         URL,
 //         { name, points, description },
@@ -139,7 +139,7 @@
 //   const handleAddEvent = async (e) => {
 //     e.preventDefault();
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/add-event`;
+//       const URL = `http://localhost:8080/api/v1/club/add-event`;
 //       const response = await axios.post(
 //         URL,
 //         { name, points, description, event_date: selectedDate.toISOString() },
@@ -277,7 +277,7 @@
 //   const handleAddEvent = async (e) => {
 //     e.preventDefault();
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/add-event`;
+//       const URL = `http://localhost:8080/api/v1/club/add-event`;
 //       const response = await axios.post(
 //         URL,
 //         { name, points, description, event_date: selectedDate.toISOString() },
@@ -435,7 +435,7 @@ const AddEvent = () => {
     const event_date = `${day.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}`;
     console.log(event_date)
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/add-event`;
+      const URL = `http://localhost:8080/api/v1/club/add-event`;
       const response = await axios.post(
         URL,
         { name, points, description, event_date},

@@ -15,7 +15,7 @@
 
 //   const fetchCounsellorDetails = async () => {
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/profile`;
+//       const URL = `http://localhost:8080/api/v1/counsellor/profile`;
 //       const response = await axios.get(URL, { withCredentials: true });
 //       console.log(response.data)
 //       dispatch(setCounsellor(response.data.counsellor));
@@ -111,7 +111,7 @@
 //             </table>
 //           )}
 //         </div> 
-      
+
 
 //       </div>
 //     </div>
@@ -128,6 +128,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 
+
 const CounsellorHome = () => {
   const dispatch = useDispatch();
   const counsellor = useSelector((state) => state?.counsellor);
@@ -137,17 +138,17 @@ const CounsellorHome = () => {
 
   const fetchCounsellorDetails = async () => {
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/profile`;
+      const URL = `http://localhost:8080/api/v1/counsellor/profile`;
       const response = await axios.get(URL, { withCredentials: true });
       dispatch(setCounsellor(response.data.counsellor));
       setDepartment(response.data.department);
-    //   console.log(response.data.students)      
-    if (response.data.students && Array.isArray(response.data.students)) {
+      //   console.log(response.data.students)      
+      if (response.data.students && Array.isArray(response.data.students)) {
         setStudents(response.data.students);
       } else {
         console.error("student_points is not an array or doesn't exist.");
       };
-    //   console.log(students)
+      //   console.log(students)
       setLoadingStudents(false);
     } catch (error) {
       console.log("Error fetching counsellor details:", error);
@@ -176,7 +177,29 @@ const CounsellorHome = () => {
       </div>
     );
   }
-
+  const sendAlert=async(sid)=>{
+    console.log(sid);
+    try {
+      const URL = `http://localhost:8080/api/v1/counsellor/send-mail`;
+      const response = await axios.post(
+        URL,
+        { studentID: sid },
+        { withCredentials: true }
+      );
+      
+      toast.success(response.data.message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      
+    } catch (error) {
+      console.error("Error Sending Alert", error);
+      toast.error("Failed to Send Alert To Student. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } 
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="container mx-auto">
@@ -195,7 +218,7 @@ const CounsellorHome = () => {
           </p>
         </div>
 
-       
+
 
         {/* Students Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -227,10 +250,11 @@ const CounsellorHome = () => {
                     <td className="border border-gray-300 p-2 text-center">
                       <Link
                         to={`/api/v1/counsellor/students/${student.student_id}`}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 w-50"
                       >
                         View Student Profile
                       </Link>
+                      <button className="bg-red-500 px-4 py-2 rounded-lg hover:bg-red-600 ml-10" onClick={()=>sendAlert(student.student_id)}>Alert</button>
                     </td>
                   </tr>
                 ))}

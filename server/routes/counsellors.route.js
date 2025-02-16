@@ -21,6 +21,6 @@ router
     .get(isAuthenticated(["counsellor"]), getCounsellorProfile);
 router.route("/student").post(isAuthenticated(["counsellor"]), getStudent);
 
-router.route("/send-mail").get(isAuthenticated(["counsellor"], alertStudent));
+router.route("/send-mail").post(isAuthenticated(["counsellor"]),alertStudent);
 
 export default router;

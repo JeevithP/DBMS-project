@@ -9,7 +9,7 @@ import departmentRoute from "../server/routes/department.route.js"
 // Initialize the app
 const app = express();
 app.use(cors({
-    origin:process.env.FRONTEND_URL,
+    origin:"http://localhost:3000",
     credentials:true
 }))
 // Middleware to parse JSON requests

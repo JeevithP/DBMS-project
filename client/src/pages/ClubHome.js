@@ -16,7 +16,7 @@
 //   useEffect(() => {
 //     const fetchProfile = async () => {
 //       try {
-//         const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/profile`;
+//         const URL = `http://localhost:8080/api/v1/club/profile`;
 //         const response = await axios.get(URL, { withCredentials: true });
 //         console.log(response)
 //         if (response.data.success) {
@@ -118,7 +118,7 @@ const ClubEvents = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/profile`;
+        const URL = `http://localhost:8080/api/v1/club/profile`;
         const response = await axios.get(URL, { withCredentials: true });
         if (response.data.success) {
           dispatch(setClubUser(response.data.club));

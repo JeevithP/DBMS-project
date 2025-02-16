@@ -14,7 +14,7 @@ const DeleteEvent = () => {
   const handleDeleteEvent = async (e) => {
     e.preventDefault();
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/del-event`;
+      const URL = `http://localhost:8080/api/v1/club/del-event`;
       const response = await axios.delete(URL, {
         data: { name },
         withCredentials: true,

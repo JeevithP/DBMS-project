@@ -1,8 +1,8 @@
 import nodemailer from "nodemailer";
 
 // Email Configuration
-const SENDER_EMAIL = "";
-const SENDER_PASWD = "";
+const SENDER_EMAIL = "jeevithp171@gmail.com";
+const SENDER_PASWD = "bdvhmsnwywkdegnu";
 
 const emailConfig = {
     service: "gmail",

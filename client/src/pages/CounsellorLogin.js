@@ -17,7 +17,7 @@ const CounsellorLogin = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const URL=`${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/login`;
+    const URL=`http://localhost:8080/api/v1/counsellor/login`;
     try {
       const response = await axios({
         method :'post',

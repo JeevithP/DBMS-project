@@ -17,7 +17,7 @@
 
 //   const fetchUserDetails = async () => {
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/profile`;
+//       const URL = `http://localhost:8080/api/v1/student/profile`;
 //       const response = await axios.get(URL, { withCredentials: true });
 //       dispatch(setUser(response.data.student));
 //     } catch (error) {
@@ -27,7 +27,7 @@
 
 //   const fetchEvents = async () => {
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/get-events`;
+//       const URL = `http://localhost:8080/api/v1/student/get-events`;
 //       const response = await axios.get(URL, { withCredentials: true });
 //       setEvents(response.data.data);
 //       setLoadingEvents(false);
@@ -40,7 +40,7 @@
 //   const registerForEvent = async (eventId) => {
 //     setRegisteringEventId(eventId);
 //     try {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/register-event`;
+//       const URL = `http://localhost:8080/api/v1/student/register-event`;
 //       const response = await axios.post(
 //         URL,
 //         { event_id: eventId },
@@ -231,7 +231,7 @@ const Home = () => {
 
   const fetchUserDetails = async () => {
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/profile`;
+      const URL = `http://localhost:8080/api/v1/student/profile`;
       const response = await axios.get(URL, { withCredentials: true });
       dispatch(setUser(response.data.students));
       console.log(response.data.students)
@@ -242,7 +242,7 @@ const Home = () => {
 
   const fetchEvents = async () => {
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/get-events`;
+      const URL = `http://localhost:8080/api/v1/student/get-events`;
       const response = await axios.get(URL, { withCredentials: true });
       setEvents(response.data.data);
       console.log(response.data.data)
@@ -256,7 +256,7 @@ const Home = () => {
   const registerForEvent = async (eventId) => {
     setRegisteringEventId(eventId);
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/register-event`;
+      const URL = `http://localhost:8080/api/v1/student/register-event`;
       const response = await axios.post(
         URL,
         { event_id: eventId },

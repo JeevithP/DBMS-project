@@ -19,19 +19,19 @@
 //     e.preventDefault();
 //     e.stopPropagation();
 //     if (user.name) {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/logout`;
+//       const URL = `http://localhost:8080/api/v1/student/logout`;
 //       await axios.get(URL, { withCredentials: true });
 //       dispatch(logout());
 //       localStorage.clear();
 //       navigate("/api/v1/student/login");
 //     } else if (club.name) {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/logout`;
+//       const URL = `http://localhost:8080/api/v1/club/logout`;
 //       await axios.get(URL, { withCredentials: true });
 //       dispatch(logoutClubUser());
 //       localStorage.clear();
 //       navigate("/api/v1/club/login");
 //     } else if (counsellor.name) {
-//       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/logout`;
+//       const URL = `http://localhost:8080/api/v1/counsellor/logout`;
 //       await axios.get(URL, { withCredentials: true });
 //       dispatch(logoutCounsellor());
 //       localStorage.clear();
@@ -94,19 +94,19 @@ const Navbar = () => {
     e.preventDefault();
     e.stopPropagation();
     if (user.name) {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/student/logout`;
+      const URL = `http://localhost:8080/api/v1/student/logout`;
       await axios.get(URL, { withCredentials: true });
       dispatch(logout());
       localStorage.clear();
       navigate("/");
     } else if (club.name) {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/logout`;
+      const URL = `http://localhost:8080/api/v1/club/logout`;
       await axios.get(URL, { withCredentials: true });
       dispatch(logoutClubUser());
       localStorage.clear();
       navigate("/");
     } else if (counsellor.name) {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/logout`;
+      const URL = `http://localhost:8080/api/v1/counsellor/logout`;
       await axios.get(URL, { withCredentials: true });
       dispatch(logoutCounsellor());
       localStorage.clear();

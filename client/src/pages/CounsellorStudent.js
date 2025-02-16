@@ -14,7 +14,7 @@ const ViewStudentProfile = () => {
 
   const fetchStudentDetails = async () => {
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/counsellor/student`;
+      const URL = `http://localhost:8080/api/v1/counsellor/student`;
       const response = await axios.post(
         URL,
         { studentID }, // Send student ID in the request body

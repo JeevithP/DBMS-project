@@ -12,7 +12,7 @@ const EventStudents = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/get-students`;
+        const URL = `http://localhost:8080/api/v1/club/get-students`;
         const response = await axios.post(
           URL,
           { eid },
@@ -40,7 +40,7 @@ const EventStudents = () => {
 
   const approveStudents = async () => {
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1/club/verify-students`;
+      const URL = `http://localhost:8080/api/v1/club/verify-students`;
       const response = await axios.post(
         URL,
         { eid, studentIds: selectedStudents },
